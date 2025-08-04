@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: msusers
+  namespace: msusers-ns
+  labels:
+    app: msusers
+spec:
+  selector:
+    app: msusers
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    name: msusers
+    port: 80
+    targetPort: msusers
+  - protocol: TCP
+    name: metrics
+    port: 9009
+    targetPort: metrics
+    

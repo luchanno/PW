@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delivery-config
+  namespace: msusers-ns
+data:
+  application.properties: |
+    spring.application.name=delivery
+    server.port=9106
+    # DB
+    spring.datasource.url=jdbc:postgresql://postgres:5432/users_db
+    spring.datasource.username=${DB_USERNAME}
+    spring.datasource.password=${DB_PASSWORD}
+    spring.datasource.driver-class-name=org.postgresql.Driver
+    spring.jpa.database=postgresql
+    spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+    spring.sql.init.mode=always
+    # LOGGING
+    logging.level.org.springframework=INFO
+    #Kafka
+    spring.cloud.stream.kafka.binder.brokers=kafka-service
+    spring.cloud.stream.kafka.binder.defaultBrokerPort=9092
+    spring.cloud.stream.kafka.binder.autoCreateTopics=true
+    spring.cloud.stream.bindings.deliveryok.destination=DeliveryOK
+    spring.cloud.stream.bindings.output.content-type=application/json
+    spring.kafka.bootstrap-servers=kafka-service:9092
+    # METRICS
+    management.endpoints.web.exposure.include=prometheus,health,metrics
+    management.endpoint.health.show-components=always
+    management.endpoint.health.show-details=always
+    management.endpoint.health.probes.enabled=true
+    management.prometheus.metrics.export.enabled=true 
+    management.metrics.distribution.percentiles-histogram.http.server.requests = true
+    management.metrics.distribution.percentiles-histogram.http.client.requests = true
+    management.metrics.distribution.slo.http.server.requests = 10ms,50ms,100ms,200ms,300ms,400ms,500ms,600ms,800ms
+    management.metrics.enable.jvm = true
+    management.server.port=9009
+    
+    

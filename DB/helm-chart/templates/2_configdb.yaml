@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgre-configmap
+  namespace: msusers-ns
+data:
+  init.sql: |
+    SET statement_timeout = 0;
+    SET lock_timeout = 0;
+    SET idle_in_transaction_session_timeout = 0;
+    SET transaction_timeout = 0;
+    SET client_encoding = 'UTF8';
+    SET standard_conforming_strings = on;
+    SELECT pg_catalog.set_config('search_path', '', false);
+    SET check_function_bodies = false;
+    SET xmloption = content;
+    SET client_min_messages = warning;
+    SET row_security = off;
+    DROP DATABASE IF EXISTS users_db;
+    CREATE DATABASE users_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'Russian_Russia.1251';
+    ALTER DATABASE users_db OWNER TO root;
+    SET statement_timeout = 0;
+    SET lock_timeout = 0;
+    SET idle_in_transaction_session_timeout = 0;
+    SET transaction_timeout = 0;
+    SET client_encoding = 'UTF8';
+    SET standard_conforming_strings = on;
+    SELECT pg_catalog.set_config('search_path', '', false);
+    SET check_function_bodies = false;
+    SET xmloption = content;
+    SET client_min_messages = warning;
+    SET row_security = off;
+    SET default_tablespace = '';
+    SET default_table_access_method = heap;
+    DROP SCHEMA public CASCADE;
+    DROP SCHEMA orders CASCADE;
+    DROP SCHEMA billing CASCADE;
+    DROP SCHEMA inventory CASCADE;
+    DROP SCHEMA delivery CASCADE;
+    CREATE SCHEMA IF NOT EXISTS public
+        AUTHORIZATION pg_database_owner;
+    CREATE SCHEMA IF NOT EXISTS orders
+        AUTHORIZATION root;
+    CREATE SCHEMA IF NOT EXISTS billing
+        AUTHORIZATION root;
+    CREATE SCHEMA IF NOT EXISTS inventory
+        AUTHORIZATION root;
+    CREATE SCHEMA IF NOT EXISTS delivery
+        AUTHORIZATION root;
+    CREATE TABLE public.users (
+        id integer NOT NULL,
+        username character varying(200) NOT NULL,
+        first_name character varying(200) NOT NULL,
+        last_name character varying(200) NOT NULL,
+        email character varying(254) NOT NULL
+    );
+    ALTER TABLE ONLY public.users
+        ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+    CREATE TABLE billing.accounts(
+        id integer NOT NULL,
+        user_id integer NOT NULL,
+        money integer NOT NULL DEFAULT 0,
+        CONSTRAINT accounts_pkey PRIMARY KEY (id)
+    );
+    CREATE SEQUENCE billing.account_id_seq
+        INCREMENT 1
+        START 1001
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    CREATE TABLE orders.ordersaga(
+        id integer NOT NULL,
+        user_id integer NOT NULL,
+        item_id integer NOT NULL,
+        amount integer NOT NULL,
+        status character varying(20) COLLATE pg_catalog."default" NOT NULL,
+        rqid uuid NOT NULL,
+        create_date timestamp without time zone NOT NULL,
+        CONSTRAINT orders_pkey PRIMARY KEY (id)
+    );
+    CREATE SEQUENCE orders.order_id_seq
+        INCREMENT 1
+        START 1001
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    CREATE TABLE  inventory.items(
+        id integer NOT NULL,
+        quantity integer NOT NULL,
+        CONSTRAINT messages_pkey PRIMARY KEY (id)
+    );
+    CREATE SEQUENCE inventory.item_id_seq
+        INCREMENT 1
+        START 1001
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;
+    CREATE TABLE  delivery.delivery(
+        id integer NOT NULL,
+        order_id integer NOT NULL,
+        CONSTRAINT messages_pkey PRIMARY KEY (id)
+    );
+    CREATE SEQUENCE delivery.delivery_id_seq
+        INCREMENT 1
+        START 1001
+        NO MINVALUE
+        NO MAXVALUE
+        CACHE 1;        

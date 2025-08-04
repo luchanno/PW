@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: inventory
+  namespace: msusers-ns
+  labels:
+    app: inventory
+spec:
+  endpoints:
+    - port: metrics
+      scrapeTimeout: 30s
+      path: "/actuator/prometheus"     
+#  jobLabel: stack
+  selector:
+    matchLabels:
+      app: inventory

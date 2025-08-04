@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing
+  namespace: msusers-ns
+  labels:
+    app: billing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate 
+  progressDeadlineSeconds: 300
+  revisionHistoryLimit: 5    
+  template:
+    metadata:
+      name: billing
+      labels:
+        app: billing
+    spec:
+      containers:
+      - name: billing
+        image: alex197612/billingsaga:v1.0.3
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9101
+          name: billing
+          protocol: TCP
+        - containerPort: 9009
+          name: metrics
+          protocol: TCP
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+#        livenessProbe:
+#          httpGet:
+#            path: "/actuator/health/liveness"
+#            port: "metrics"
+#          initialDelaySeconds: 600
+#          failureThreshold: 3
+#          periodSeconds: 10
+#        readinessProbe:
+#          httpGet:
+#            path: "/actuator/health/readiness"
+#            port: "metrics"
+#          initialDelaySeconds: 600
+#          failureThreshold: 3
+#          periodSeconds: 10
+#        lifecycle:
+#          preStop:
+#            exec:
+#              command: ["sh", "-c", "sleep 10"]
+        env:
+            - name: DB_USERNAME
+              valueFrom:
+                  secretKeyRef:
+                    name: postgre-cred
+                    key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                  secretKeyRef:
+                    name: postgre-cred
+                    key: password
+        volumeMounts:
+        - name: billing-config
+          mountPath: "/opt/config"
+        command: ["java", "-jar", "/app.jar", "--spring.config.location=/opt/config/application.properties", "--spring.profiles.active=postgres"]  
+      volumes:
+      - name: billing-config
+        configMap:
+          name: billing-config
+
+

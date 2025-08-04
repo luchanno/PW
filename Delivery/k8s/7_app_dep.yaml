@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery
+  namespace: msusers-ns
+  labels:
+    app: delivery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: delivery
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate 
+  progressDeadlineSeconds: 300
+  revisionHistoryLimit: 5    
+  template:
+    metadata:
+      name: delivery
+      labels:
+        app: delivery
+    spec:
+      containers:
+      - name: delivery
+        image: alex197612/deliverysaga:v1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9106
+          name: delivery
+          protocol: TCP
+        - containerPort: 9009
+          name: metrics
+          protocol: TCP
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+#        livenessProbe:
+#          httpGet:
+#            path: "/actuator/health/liveness"
+#            port: "metrics"
+#          initialDelaySeconds: 600
+#          failureThreshold: 3
+#          periodSeconds: 10
+#        readinessProbe:
+#          httpGet:
+#            path: "/actuator/health/readiness"
+#            port: "metrics"
+#          initialDelaySeconds: 600
+#          failureThreshold: 3
+#          periodSeconds: 10
+#        lifecycle:
+#          preStop:
+#            exec:
+#              command: ["sh", "-c", "sleep 10"]
+        env:
+            - name: DB_USERNAME
+              valueFrom:
+                  secretKeyRef:
+                    name: postgre-cred
+                    key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                  secretKeyRef:
+                    name: postgre-cred
+                    key: password
+        volumeMounts:
+        - name: delivery-config
+          mountPath: "/opt/config"
+        command: ["java", "-jar", "/app.jar", "--spring.config.location=/opt/config/application.properties", "--spring.profiles.active=postgres"]  
+      volumes:
+      - name: delivery-config
+        configMap:
+          name: delivery-config
+
+

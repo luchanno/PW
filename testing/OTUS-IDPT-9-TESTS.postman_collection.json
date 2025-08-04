@@ -1,0 +1,465 @@
+{
+	"info": {
+		"_postman_id": "eded5f73-8465-47a2-bef6-28249fa49ca0",
+		"name": "OTUS-IDPT-9-TESTS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20628036",
+		"_collection_link": "https://www.postman.com/alexkorkhov/workspace/public/collection/20628036-eded5f73-8465-47a2-bef6-28249fa49ca0?action=share&source=collection_link&creator=20628036"
+	},
+	"item": [
+		{
+			"name": "1. Create User1",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"username1\", pm.variables.replaceIn('{{$randomUserName}}'))\r",
+							"pm.collectionVariables.set(\"rqid1\", pm.variables.replaceIn('{{$randomUUID}}')) \r",
+							"pm.collectionVariables.set(\"rqid2\", pm.variables.replaceIn('{{$randomUUID}}')) \r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"if (responseJson && responseJson.id) {\r",
+							"    pm.collectionVariables.set(\"userId1\", responseJson.id)\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"{{username1}}\",\r\n    \"firstName\": \"Fedor\",\r\n    \"lastName\": \"Uvanov\",\r\n    \"email\": \"ivanov@example.com\",\r\n    \"phone\": \"11111\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/msusers/user",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"msusers",
+						"user"
+					]
+				},
+				"description": "Создаем пользователя 1 в сервисе msusers\n\nСинхронно создается account в биллинге с балансом 0"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Add Money to User1",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/billing/upMoney?userId={{userId1}}&money=100",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"billing",
+						"upMoney"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "{{userId1}}"
+						},
+						{
+							"key": "money",
+							"value": "100"
+						}
+					]
+				},
+				"description": "Положим 100 рублей на счет пользователя 1"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Create Item1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"if (responseJson && responseJson.id) {\r",
+							"    pm.collectionVariables.set(\"itemId1\", responseJson.id)\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n     \"quantity\":100\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/inventory/createItem",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"inventory",
+						"createItem"
+					]
+				},
+				"description": "Создаем Товар 1 на складе с количеством 100"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Create Order (rqid1)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"if (responseJson && responseJson.id) {\r",
+							"    pm.collectionVariables.set(\"orderId1\", responseJson.id)\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "rqid",
+						"value": "{{rqid1}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":\"{{userId1}}\",\r\n    \"amount\": 15,\r\n    \"itemId\":\"{{itemId1}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/createOrder",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"createOrder"
+					]
+				},
+				"description": "Создаем заказ на пользователя 1, товар 1 (1 единица), стоимость 15\n\nВ результате распределенной транзакции должно выполниться:\n\n1. Сняться деньги со счета (15 рублей)\n    \n2. Сняться позиция со склада (1 штука)\n    \n3. Создасться запись в сервисе доставки\n    \n4. Заказ должен перейти в статус CONFIRMED"
+			},
+			"response": []
+		},
+		{
+			"name": "5. Create Order (rqid1)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"if (responseJson && responseJson.id) {\r",
+							"    pm.collectionVariables.set(\"orderId1\", responseJson.id)\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, 5000);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "rqid",
+						"value": "{{rqid1}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":\"{{userId1}}\",\r\n    \"amount\": 15,\r\n    \"itemId\":\"{{itemId1}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/createOrder",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"createOrder"
+					]
+				},
+				"description": "Повторение запроса на создание заказа через 5 секунд\n\nВозвращается ранее созданный заказ"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Create Order (rqid1)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"if (responseJson && responseJson.id) {\r",
+							"    pm.collectionVariables.set(\"orderId1\", responseJson.id)\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, 30000);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "rqid",
+						"value": "{{rqid1}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":\"{{userId1}}\",\r\n    \"amount\": 15,\r\n    \"itemId\":\"{{itemId1}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/createOrder",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"createOrder"
+					]
+				},
+				"description": "Повторение запроса на создание заказа через 120 секунд\n\nСоздается новый заказ"
+			},
+			"response": []
+		},
+		{
+			"name": "7. Create Order (rqid2)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const responseJson = pm.response.json();\r",
+							"if (responseJson && responseJson.id) {\r",
+							"    pm.collectionVariables.set(\"orderId1\", responseJson.id)\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"setTimeout(function(){}, 1000);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "rqid",
+						"value": "{{rqid2}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"userId\":\"{{userId1}}\",\r\n    \"amount\": 15,\r\n    \"itemId\":\"{{itemId1}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/orders/createOrder",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"orders",
+						"createOrder"
+					]
+				},
+				"description": "Повторение запроса на создание заказа с новым rqid\n\nСоздается новый заказ"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "arch.homework",
+			"type": "string"
+		},
+		{
+			"key": "username1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "username2",
+			"value": "",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "userId1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId2",
+			"value": "",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "itemId1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "itemId2",
+			"value": "",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "orderId1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderId2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderId3",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"value": "",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "rqid1",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "rqid2",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

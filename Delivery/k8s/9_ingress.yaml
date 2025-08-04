@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: delivery-ingress
+  namespace: msusers-ns
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: arch.homework
+    http:
+      paths:
+      - path: /delivery/
+        pathType: Prefix
+        backend:
+          service:
+            name: delivery
+            port:
+              number: 80

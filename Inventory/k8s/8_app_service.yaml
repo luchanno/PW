@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory
+  namespace: msusers-ns
+  labels:
+    app: inventory
+spec:
+  selector:
+    app: inventory
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    name: inventory
+    port: 80
+    targetPort: inventory
+  - protocol: TCP
+    name: metrics
+    port: 9009
+    targetPort: metrics
+    

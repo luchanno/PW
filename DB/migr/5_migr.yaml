@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-db
+  namespace: msusers-ns
+spec:
+  template:
+    metadata:
+      name: init-db
+      labels:
+        app: init-postgresdb
+    spec:
+      containers:
+        - image: 'postgres:17'
+          name: init-db
+          command: [ "bin/sh", "-c", "psql -h 'postgres' -U root -d users_db -f command.sql/init.sql" ]
+          env:
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgre-cred
+                key: password
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgre-cred
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgre-cred
+                key: password
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: postgre-cred
+                key: dbname
+          volumeMounts:
+            - name: sql-command
+              mountPath: /command.sql
+      restartPolicy: OnFailure
+      volumes:
+        - name: sql-command
+          configMap:
+            name: postgre-configmap 

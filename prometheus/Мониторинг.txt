@@ -1,0 +1,55 @@
+Мониторинг
+
+1) Утилита нагрузки
+
+FOR /L %N IN () DO e:\tmp\ab.exe -n 50 -c 10 http://arch.homework/users
+FOR /L %N IN () DO e:\tmp\ab.exe -n 50 -c 10 http://arch.homework/user/3
+FOR /L %N IN () DO e:\tmp\ab.exe -n 50 -c 10 -u e:\tmp\put.txt -T application/json http://arch.homework/user/1002
+
+
+
+2) Установка prometheus
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+helm repo update
+
+# Установка в отдельном NS (необязательна), применение доп.настроек из файла prometheus.yaml (ОБЯЗАТЕЛЬНО!!!)
+helm install prometheus prometheus-community/kube-prometheus-stack --namespace=prometheus --create-namespace -f prometheus.yaml
+
+
+3) Проброс портов
+
+kubectl port-forward service/prometheus-operated 9090 -n prometheus
+kubectl port-forward service/prometheus-grafana  9000:80 -n prometheus
+
+графана:
+admin / prom-operator
+
+sum by(uri,method, status)(rate(http_server_requests_seconds_count [1m]))
+
+sum by(uri,method)(rate(http_server_requests_seconds_sum [1m])) / sum by(uri,method)(rate(http_server_requests_seconds_count [1m]))
+
+histogram_quantile(0.98, sum by(le, uri) (rate(http_server_requests_seconds_bucket [1m])))
+
+Errors
+sum by(uri, method) (rate(http_server_requests_seconds_bucket{method=~"GET|PUT",status=~"500|501|502|503|504"} [1m]))
+
+RPS
+sum by(uri,method)(rate(http_server_requests_seconds_sum{method=~"GET|PUT"} [1m])) / sum by(uri,method)(rate(http_server_requests_seconds_count{method=~"GET|PUT"} [1m]))
+
+Latency
+histogram_quantile(0.95, sum by(le, uri, method) (rate(http_server_requests_seconds_bucket{method=~"GET|PUT"} [1m])))
+
+II.Nginx
+
+Обновить nginx
+helm upgrade --install nginx ingress-nginx/ingress-nginx --namespace m --set controller.metrics.enabled=true --set controller.metrics.serviceMonitor.enabled=true --set controller.metrics.serviceMonitor.additionalLabels.release="kube-prometheus-stack" -f nginx/0_OPT_nginx_ingress-25239-20146a.yaml
+
+{job="nginx-ingress-nginx-controller-metrics", host="arch.homework"}
+
+Lantency 
+histogram_quantile (0.5, sum by (le) (rate(nginx_ingress_controller_request_duration_seconds_bucket [1m])))
+
+RPS
+sum (rate(nginx_ingress_controller_request_duration_seconds_sum [1m])) / sum (rate(nginx_ingress_controller_request_duration_seconds_count [1m]))

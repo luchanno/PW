@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+  namespace: msusers-ns
+  labels:
+    app: order
+spec:
+  selector:
+    app: order
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    name: order
+    port: 80
+    targetPort: order
+  - protocol: TCP
+    name: metrics
+    port: 9009
+    targetPort: metrics
+    
