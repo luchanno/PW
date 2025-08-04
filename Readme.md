@@ -47,11 +47,15 @@
 
 ## 5) Установить Prometheus&GrafanaPrometheus и пробросить к ним порты
 
+### Установка
+
 ```helm repo add prometheus-community https://prometheus-community.github.io/helm-charts```
 
 ```helm repo update```
 
 ```helm install prometheus prometheus-community/kube-prometheus-stack --namespace=msusers-ns --create-namespace -f prometheus/prometheus.yaml```
+
+### Проброска портов после установки
 
 ```kubectl port-forward service/prometheus-operated 9090 -n msusers-ns```
 
@@ -96,5 +100,6 @@
 
 ```http://127.0.0.1:9090/```
 Креды ```admin/prom-operator```
+
 
 
