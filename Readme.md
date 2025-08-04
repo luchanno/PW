@@ -43,16 +43,16 @@
 
 ## 4) Установить Kafka
 
-kubectl create -f ./kafka/resources/zookeeper.yml && kubectl create -f ./kafka/resources/kafka.yml
+```kubectl create -f ./kafka/resources/zookeeper.yml && kubectl create -f ./kafka/resources/kafka.yml```
 
 ## 5) Установить Prometheus&GrafanaPrometheus и пробросить к ним порты
 
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-helm install prometheus prometheus-community/kube-prometheus-stack --namespace=msusers-ns --create-namespace -f prometheus.yaml
+```helm repo add prometheus-community https://prometheus-community.github.io/helm-charts```
+```helm repo update```
+```helm install prometheus prometheus-community/kube-prometheus-stack --namespace=msusers-ns --create-namespace -f prometheus.yaml```
 
-kubectl port-forward service/prometheus-operated 9090 -n msusers-ns
-kubectl port-forward service/prometheus-grafana  9000:80 -n msusers-ns
+```kubectl port-forward service/prometheus-operated 9090 -n msusers-ns```
+```kubectl port-forward service/prometheus-grafana  9000:80 -n msusers-ns```
 
 ## 6) Развернуть БД в k8s
 
@@ -93,3 +93,4 @@ kubectl port-forward service/prometheus-grafana  9000:80 -n msusers-ns
 
 ```http://127.0.0.1:9090/```
 Креды ```admin/prom-operator```
+
