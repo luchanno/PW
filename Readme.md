@@ -110,6 +110,10 @@
 
 Latency: histogram_quantile(0.95, sum by(le, uri, method) (rate(http_server_requests_seconds_bucket[1m])))
 
+<img width="1589" height="928" alt="image" src="https://github.com/user-attachments/assets/c3272e82-2a27-46ee-afe5-1e9e0c81ed3c" />
+
+
+
 
 
 
