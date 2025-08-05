@@ -45,7 +45,7 @@
 
 ```kubectl create -f ./kafka/resources/zookeeper.yml && kubectl create -f ./kafka/resources/kafka.yml```
 
-## 5) Установить Prometheus&GrafanaPrometheus и пробросить к ним порты
+## 5) Установить Prometheus&Grafana и пробросить к ним порты
 
 ### Установка
 
@@ -100,6 +100,7 @@
 
 ```http://127.0.0.1:9090/```
 Креды ```admin/prom-operator```
+
 
 
 
