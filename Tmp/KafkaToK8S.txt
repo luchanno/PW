@@ -1,5 +1,0 @@
-
-
-kubectl create -f ./kafka/resources/zookeeper.yml
-
-kubectl create -f ./kafka/resources/kafka.yml
