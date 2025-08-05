@@ -91,16 +91,16 @@
 
 ## Метрики
 
-## 1) prometheus UI
+### 1) prometheus UI
 
 ```http://127.0.0.1:9000/```
 
-## 2) Graphana UI
+### 2) Graphana UI
 
 ```http://127.0.0.1:9090/```
 Креды ```admin/prom-operator```
 
-## Состав метрик 
+### Состав метрик 
 
 Ошибки в Kafke по топикам: sum by(topic) (rate(kafka_producer_topic_record_error_total[1m]))
 
@@ -109,6 +109,7 @@
 Ошибки 5xx: sum by(uri, method) (rate(http_server_requests_seconds_bucket{status=~"500|501|502|503|504"} [1m]))
 
 Latency: histogram_quantile(0.95, sum by(le, uri, method) (rate(http_server_requests_seconds_bucket[1m])))
+
 
 
 
