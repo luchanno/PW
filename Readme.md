@@ -85,10 +85,9 @@
 
 Рекомендуется установить расширение для newman `npm install -g newman-reporter-htmlextra`
 
-* Коллекция: https://www.postman.com/alexkorkhov/public/collection/794gnl5/otus-saga-8
-* Сценарий: https://www.postman.com/alexkorkhov/public/collection/ii5u5x6/otus-idpt-9-tests (в сценарии вставлены искуственные задержки порядка 40 секунд суммарно)
-* Проверка коллекции: `newman run testing/OTUS-IDPT-9-TESTS.postman_collection.json -r htmlextra` 
-* Результат выполнения: `newman/OTUS-IDPT-9-TESTS-2025-07-23-00-06-25-281-0.html`
+* Сценарий: https://www.postman.com/alexkorkhov/public/collection/qvawlfk/otus-pw-prometheus-tests (в сценарии вставлены искуственные задержки порядка 4 секунд суммарно)
+* Проверка коллекции: `newman run testing/OTUS-PW-PROMETHEUS-TESTS.postman_collection.json -r htmlextra` 
+* Результат выполнения: `newman/OTUS-PW-PROMETHEUS-TESTS-2025-08-05-18-37-58-938-0.html`
 
 ## Метрики
 
@@ -100,6 +99,16 @@
 
 ```http://127.0.0.1:9090/```
 Креды ```admin/prom-operator```
+
+## Состав метрик 
+
+Ошибки в Kafke по топикам: sum by(topic) (rate(kafka_producer_topic_record_error_total[1m]))
+
+Ошибки 4xx: sum by(uri, method) (rate(http_server_requests_seconds_bucket{status=~"400|401|402|403|404"} [1m]))
+
+Ошибки 5xx: sum by(uri, method) (rate(http_server_requests_seconds_bucket{status=~"500|501|502|503|504"} [1m]))
+
+Latency: histogram_quantile(0.95, sum by(le, uri, method) (rate(http_server_requests_seconds_bucket[1m])))
 
 
 
